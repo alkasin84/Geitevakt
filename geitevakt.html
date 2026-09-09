@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geitevakt</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --pine: #23301f;
+    --moss: #5c7a4c;
+    --moss-dark: #435c39;
+    --lichen: #eef0e0;
+    --ochre: #c88a35;
+    --ochre-soft: #f3e3c6;
+    --paper: #ffffff;
+    --line: #dbe0cc;
+    --ink-soft: #5f6b56;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--lichen);
+    color:var(--pine);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:520px;
+    margin:0 auto;
+    padding:0 20px 60px;
+  }
+
+  /* ---- Hero ---- */
+  .hero{
+    padding:34px 0 22px;
+    display:flex;
+    align-items:flex-end;
+    gap:16px;
+  }
+  .hero svg{ flex:0 0 auto; }
+  .hero-text h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:30px;
+    letter-spacing:-0.015em;
+    margin:0 0 6px;
+    color:var(--pine);
+    line-height:1.05;
+  }
+  .hero-text p{
+    margin:0;
+    font-size:14px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    max-width:30ch;
+  }
+
+  /* ---- Status banner ---- */
+  .status-banner{
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:20px;
+    font-size:14.5px;
+    line-height:1.5;
+    border:1px solid var(--line);
+    background:var(--paper);
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .status-dot{
+    width:10px; height:10px; border-radius:50%;
+    margin-top:5px; flex:0 0 auto;
+    background:var(--ochre);
+  }
+  .status-ok .status-dot{ background:var(--moss); }
+  .status-banner strong{
+    display:block;
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:15.5px;
+    color:var(--pine);
+    margin-bottom:2px;
+  }
+  .status-banner span{ color:var(--ink-soft); }
+
+  /* ---- Cards ---- */
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:16px;
+    margin:0 0 14px;
+    color:var(--pine);
+  }
+
+  .name-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(112px,1fr));
+    gap:9px;
+    margin-bottom:18px;
+  }
+  .name-btn{
+    border:1.5px solid var(--line);
+    background:var(--lichen);
+    border-radius:10px;
+    padding:13px 8px;
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--pine);
+    cursor:pointer;
+    transition:border-color .15s, background .15s, color .15s;
+    text-align:center;
+  }
+  .name-btn.selected{
+    border-color:var(--moss);
+    background:var(--moss);
+    color:#fff;
+  }
+
+  .task-label{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:0 0 10px;
+    font-weight:500;
+  }
+  .task-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+    margin-bottom:20px;
+  }
+  .task-btn{
+    border:1.5px solid var(--line);
+    background:var(--lichen);
+    border-radius:10px;
+    padding:12px 10px;
+    font-size:14px;
+    font-weight:500;
+    color:var(--pine);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transition:border-color .15s, background .15s;
+  }
+  .task-btn .ic{ font-size:16px; }
+  .task-btn.selected{
+    border-color:var(--ochre);
+    background:var(--ochre-soft);
+  }
+
+  .register-btn{
+    width:100%;
+    border:none;
+    border-radius:12px;
+    background:var(--pine);
+    color:#fff;
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:16.5px;
+    padding:15px;
+    cursor:pointer;
+    transition:background .15s, transform .1s;
+  }
+  .register-btn:active{ transform:scale(0.98); }
+  .register-btn:hover{ background:var(--moss-dark); }
+  .register-btn:disabled{ background:#c7cabb; cursor:not-allowed; }
+
+  .today-list{ list-style:none; margin:0; padding:0; }
+  .today-list li{
+    padding:11px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14.5px;
+  }
+  .today-list li:last-child{ border-bottom:none; }
+  .row-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .today-name{ font-weight:600; }
+  .today-time{ color:var(--ink-soft); font-variant-numeric:tabular-nums; font-size:13.5px; }
+  .today-tasks{
+    margin-top:5px;
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .task-chip{
+    font-size:12px;
+    background:var(--ochre-soft);
+    color:var(--moss-dark);
+    padding:2px 8px;
+    border-radius:20px;
+  }
+  .empty{ color:var(--ink-soft); font-size:14px; padding:4px 0; }
+
+  .history-toggle{
+    background:none; border:none; color:var(--moss-dark);
+    font-size:13.5px; font-weight:600; cursor:pointer; padding:0;
+    text-decoration:underline; text-underline-offset:3px;
+  }
+  #history{ margin-top:14px; display:none; }
+  #history.open{ display:block; }
+  .hist-day{
+    font-family:'Fraunces',serif;
+    font-size:13.5px;
+    color:var(--pine);
+    margin:16px 0 6px;
+    font-weight:600;
+  }
+  .hist-day:first-child{ margin-top:0; }
+
+  .footer-note{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    text-align:center;
+    margin-top:26px;
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <svg width="56" height="56" viewBox="0 0 64 64" fill="none">
+      <path d="M14 46 Q10 30 20 22 Q18 16 24 12 Q26 18 30 18 Q34 18 36 12 Q42 16 40 22 Q50 30 46 46 Q46 52 32 52 Q18 52 14 46 Z" stroke="#23301f" stroke-width="2.2" fill="#f3e3c6"/>
+      <circle cx="26" cy="34" r="2" fill="#23301f"/>
+      <circle cx="38" cy="34" r="2" fill="#23301f"/>
+      <path d="M27 41 Q32 44 37 41" stroke="#23301f" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M24 12 Q22 6 26 4" stroke="#23301f" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+      <path d="M36 12 Q38 6 34 4" stroke="#23301f" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    </svg>
+    <div class="hero-text">
+      <h1>Geitevakt</h1>
+      <p>Registrer besøket hos geitene, så ser de andre at det er gjort.</p>
+    </div>
+  </div>
+
+  <div id="statusBanner" class="status-banner">
+    <div class="status-dot"></div>
+    <div><strong>Laster status …</strong></div>
+  </div>
+
+  <div class="card">
+    <h2>Hvem er du?</h2>
+    <div class="name-grid" id="nameGrid"></div>
+
+    <p class="task-label">Hva gjorde du?</p>
+    <div class="task-grid" id="taskGrid"></div>
+
+    <button class="register-btn" id="registerBtn" disabled>Velg navn først</button>
+  </div>
+
+  <div class="card">
+    <h2>I dag</h2>
+    <ul class="today-list" id="todayList">
+      <li class="empty">Laster …</li>
+    </ul>
+  </div>
+
+  <button class="history-toggle" id="historyToggle">Vis tidligere dager</button>
+  <div id="history"></div>
+
+  <p class="footer-note">Data lagres delt mellom Kasin, Himberg Krosshus og Kivle.<br>Ingenting sendes andre steder.</p>
+
+</div>
+
+<script>
+// Lim inn "Web app"-URLen din fra Google Apps Script-utrullingen her:
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnf9DUZhn_3GxfOqdMW6gM4nFWZjw7qIf7GnYbZHFX6mRouThj7MjKK33lv4tzBtNSCg/exec';
+
+const names = ['Kasin', 'Himberg Krosshus', 'Kivle'];
+const TASKS = [
+  {key:'vann', label:'Fylt på vann', icon:'💧'},
+  {key:'kraftfor', label:'Gitt kraftfôr', icon:'🌽'},
+  {key:'frukt', label:'Gitt frukt', icon:'🍎'},
+  {key:'hoy', label:'Fylt på høy', icon:'🌾'}
+];
+
+let log = [];
+let selectedName = null;
+let selectedTasks = new Set();
+
+function fmtTime(iso){
+  const d = new Date(iso);
+  return d.toLocaleTimeString('no-NO', {hour:'2-digit', minute:'2-digit'});
+}
+function fmtDateLabel(iso){
+  const d = new Date(iso);
+  const today = new Date();
+  const yest = new Date(); yest.setDate(today.getDate()-1);
+  const sameDay = (a,b)=>a.toDateString()===b.toDateString();
+  if(sameDay(d,today)) return 'I dag';
+  if(sameDay(d,yest)) return 'I går';
+  return d.toLocaleDateString('no-NO', {weekday:'long', day:'numeric', month:'long'});
+}
+function dayKey(iso){ return new Date(iso).toDateString(); }
+
+function taskLabel(key){
+  const t = TASKS.find(t=>t.key===key);
+  return t ? t.icon + ' ' + t.label : key;
+}
+
+async function loadLog(){
+  try{
+    const res = await fetch(SCRIPT_URL);
+    if(!res.ok) throw new Error('Nettverksfeil: ' + res.status);
+    log = await res.json();
+  }catch(e){
+    console.error('Kunne ikke hente logg', e);
+    log = [];
+  }
+}
+
+function renderNames(){
+  const grid = document.getElementById('nameGrid');
+  grid.innerHTML = '';
+  names.forEach(n=>{
+    const btn = document.createElement('button');
+    btn.className = 'name-btn' + (n===selectedName ? ' selected' : '');
+    btn.textContent = n;
+    btn.onclick = ()=>{
+      selectedName = n;
+      renderNames();
+      updateRegisterBtn();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function renderTasks(){
+  const grid = document.getElementById('taskGrid');
+  grid.innerHTML = '';
+  TASKS.forEach(t=>{
+    const btn = document.createElement('button');
+    btn.className = 'task-btn' + (selectedTasks.has(t.key) ? ' selected' : '');
+    btn.innerHTML = `<span class="ic">${t.icon}</span>${t.label}`;
+    btn.onclick = ()=>{
+      if(selectedTasks.has(t.key)) selectedTasks.delete(t.key);
+      else selectedTasks.add(t.key);
+      renderTasks();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function updateRegisterBtn(){
+  const btn = document.getElementById('registerBtn');
+  if(selectedName){
+    btn.disabled = false;
+    btn.textContent = 'Registrer besøk';
+  } else {
+    btn.disabled = true;
+    btn.textContent = 'Velg navn først';
+  }
+}
+
+function renderStatus(){
+  const banner = document.getElementById('statusBanner');
+  const todayKey = new Date().toDateString();
+  const todayEntries = log.filter(e => dayKey(e.timestamp) === todayKey);
+  if(todayEntries.length === 0){
+    banner.className = 'status-banner';
+    banner.innerHTML = '<div class="status-dot"></div><div><strong>Ingen har sjekket geitene i dag ennå</strong><span>Vær den første!</span></div>';
+  } else {
+    const last = todayEntries[todayEntries.length - 1];
+    banner.className = 'status-banner status-ok';
+    banner.innerHTML = `<div class="status-dot"></div><div><strong>Sjekket i dag</strong><span>Sist av ${last.name} kl. ${fmtTime(last.timestamp)}</span></div>`;
+  }
+}
+
+function renderToday(){
+  const list = document.getElementById('todayList');
+  const todayKey = new Date().toDateString();
+  const todayEntries = log.filter(e => dayKey(e.timestamp) === todayKey).slice().reverse();
+  list.innerHTML = '';
+  if(todayEntries.length === 0){
+    list.innerHTML = '<li class="empty">Ingen besøk registrert i dag ennå.</li>';
+    return;
+  }
+  todayEntries.forEach(e=>{
+    const li = document.createElement('li');
+    const tasks = (e.tasks||[]).map(k=>`<span class="task-chip">${taskLabel(k)}</span>`).join('');
+    li.innerHTML = `<div class="row-top"><span class="today-name">${e.name}</span><span class="today-time">${fmtTime(e.timestamp)}</span></div>${tasks ? `<div class="today-tasks">${tasks}</div>` : ''}`;
+    list.appendChild(li);
+  });
+}
+
+function renderHistory(){
+  const hist = document.getElementById('history');
+  const todayKey = new Date().toDateString();
+  const older = log.filter(e => dayKey(e.timestamp) !== todayKey).slice().reverse();
+  if(older.length === 0){
+    hist.innerHTML = '<p class="empty">Ingen tidligere besøk registrert.</p>';
+    return;
+  }
+  const groups = {};
+  older.forEach(e=>{
+    const k = dayKey(e.timestamp);
+    if(!groups[k]) groups[k] = [];
+    groups[k].push(e);
+  });
+  hist.innerHTML = '';
+  Object.keys(groups).slice(0,14).forEach(k=>{
+    const label = document.createElement('div');
+    label.className = 'hist-day';
+    label.textContent = fmtDateLabel(groups[k][0].timestamp);
+    hist.appendChild(label);
+    const ul = document.createElement('ul');
+    ul.className = 'today-list';
+    groups[k].forEach(e=>{
+      const li = document.createElement('li');
+      const tasks = (e.tasks||[]).map(kk=>`<span class="task-chip">${taskLabel(kk)}</span>`).join('');
+      li.innerHTML = `<div class="row-top"><span class="today-name">${e.name}</span><span class="today-time">${fmtTime(e.timestamp)}</span></div>${tasks ? `<div class="today-tasks">${tasks}</div>` : ''}`;
+      ul.appendChild(li);
+    });
+    hist.appendChild(ul);
+  });
+}
+
+async function registerVisit(){
+  const btn = document.getElementById('registerBtn');
+  btn.disabled = true;
+  btn.textContent = 'Registrerer …';
+  const entry = {
+    name: selectedName,
+    timestamp: new Date().toISOString(),
+    tasks: Array.from(selectedTasks)
+  };
+  try{
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify(entry)
+    });
+    log = await res.json();
+  }catch(e){
+    console.error('Kunne ikke lagre', e);
+    log.push(entry);
+  }
+  selectedTasks = new Set();
+  renderTasks();
+  renderStatus();
+  renderToday();
+  renderHistory();
+  btn.disabled = false;
+  btn.textContent = 'Registrert ✓';
+  setTimeout(updateRegisterBtn, 1500);
+}
+
+document.getElementById('historyToggle').onclick = ()=>{
+  const hist = document.getElementById('history');
+  hist.classList.toggle('open');
+  document.getElementById('historyToggle').textContent =
+    hist.classList.contains('open') ? 'Skjul tidligere dager' : 'Vis tidligere dager';
+};
+
+document.getElementById('registerBtn').onclick = registerVisit;
+
+async function init(){
+  await loadLog();
+  renderNames();
+  renderTasks();
+  updateRegisterBtn();
+  renderStatus();
+  renderToday();
+  renderHistory();
+}
+init();
+</script>
+</body>
+</html>
