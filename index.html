@@ -159,6 +159,20 @@
     background:var(--ochre-soft);
   }
 
+  .comment-input{
+    width:100%;
+    border:1.5px solid var(--line);
+    background:var(--lichen);
+    border-radius:10px;
+    padding:12px 13px;
+    font-size:14.5px;
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--pine);
+    margin-bottom:16px;
+  }
+  .comment-input::placeholder{ color:var(--ink-soft); }
+  .comment-input:focus{ outline:none; border-color:var(--moss); }
+
   .register-btn{
     width:100%;
     border:none;
@@ -202,6 +216,13 @@
     color:var(--moss-dark);
     padding:2px 8px;
     border-radius:20px;
+  }
+  .comment-text{
+    margin-top:6px;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    font-style:italic;
+    line-height:1.4;
   }
   .empty{ color:var(--ink-soft); font-size:14px; padding:4px 0; }
 
@@ -259,6 +280,8 @@
 
     <p class="task-label">Hva gjorde du?</p>
     <div class="task-grid" id="taskGrid"></div>
+
+    <input type="text" class="comment-input" id="commentInput" placeholder="Kommentar (valgfritt)" maxlength="200">
 
     <button class="register-btn" id="registerBtn" disabled>Velg navn først</button>
   </div>
@@ -395,6 +418,20 @@ function renderStatus(){
   }
 }
 
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderEntry(e){
+  const li = document.createElement('li');
+  const tasks = (e.tasks||[]).map(k=>`<span class="task-chip">${taskLabel(k)}</span>`).join('');
+  const comment = e.comment ? `<div class="comment-text">"${escapeHtml(e.comment)}"</div>` : '';
+  li.innerHTML = `<div class="row-top"><span class="today-name">${e.name}</span><span class="today-time">${fmtTime(e.timestamp)}</span></div>${tasks ? `<div class="today-tasks">${tasks}</div>` : ''}${comment}`;
+  return li;
+}
+
 function renderToday(){
   const list = document.getElementById('todayList');
   const todayKey = new Date().toDateString();
@@ -405,10 +442,7 @@ function renderToday(){
     return;
   }
   todayEntries.forEach(e=>{
-    const li = document.createElement('li');
-    const tasks = (e.tasks||[]).map(k=>`<span class="task-chip">${taskLabel(k)}</span>`).join('');
-    li.innerHTML = `<div class="row-top"><span class="today-name">${e.name}</span><span class="today-time">${fmtTime(e.timestamp)}</span></div>${tasks ? `<div class="today-tasks">${tasks}</div>` : ''}`;
-    list.appendChild(li);
+    list.appendChild(renderEntry(e));
   });
 }
 
@@ -435,10 +469,7 @@ function renderHistory(){
     const ul = document.createElement('ul');
     ul.className = 'today-list';
     groups[k].forEach(e=>{
-      const li = document.createElement('li');
-      const tasks = (e.tasks||[]).map(kk=>`<span class="task-chip">${taskLabel(kk)}</span>`).join('');
-      li.innerHTML = `<div class="row-top"><span class="today-name">${e.name}</span><span class="today-time">${fmtTime(e.timestamp)}</span></div>${tasks ? `<div class="today-tasks">${tasks}</div>` : ''}`;
-      ul.appendChild(li);
+      ul.appendChild(renderEntry(e));
     });
     hist.appendChild(ul);
   });
@@ -448,17 +479,21 @@ async function registerVisit(){
   const btn = document.getElementById('registerBtn');
   btn.disabled = true;
   btn.textContent = 'Registrerer …';
+  const commentField = document.getElementById('commentInput');
   const entry = {
     name: selectedName,
     timestamp: new Date().toISOString(),
     tasks: Array.from(selectedTasks)
   };
+  const commentVal = commentField.value.trim();
+  if(commentVal) entry.comment = commentVal;
   try{
     await db.ref('log').push(entry);
   }catch(e){
     console.error('Kunne ikke lagre', e);
   }
   selectedTasks = new Set();
+  commentField.value = '';
   renderTasks();
   btn.disabled = false;
   btn.textContent = 'Registrert ✓';
