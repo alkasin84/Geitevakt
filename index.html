@@ -277,13 +277,26 @@
 
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
 <script>
-// Lim inn "Web app"-URLen din fra Google Apps Script-utrullingen her:
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnf9DUZhn_3GxfOqdMW6gM4nFWZjw7qIf7GnYbZHFX6mRouThj7MjKK33lv4tzBtNSCg/exec';
+// Lim inn firebaseConfig-objektet ditt fra Firebase-konsollen her:
+const firebaseConfig = {
+  apiKey: "AIzaSyDo3zC5-Sxqo6-FxoiceNjb-Oq7cmAOvtI",
+  authDomain: "geitevakt.firebaseapp.com",
+  databaseURL: "https://geitevakt-default-rtdb.europe-west1.firebasedatabase.app/",
+  projectId: "geitevakt",
+  storageBucket: "geitevakt.firebasestorage.app",
+  messagingSenderId: "958713112375",
+  appId: "1:958713112375:web:2a66915b64b1f4dfdb5cb2"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 const names = ['Kasin', 'Himberg Krosshus', 'Kivle'];
 const TASKS = [
   {key:'vann', label:'Fylt på vann', icon:'💧'},
+  {key:'byttet_vann', label:'Byttet vann', icon:'🔁'},
   {key:'kraftfor', label:'Gitt kraftfôr', icon:'🌽'},
   {key:'frukt', label:'Gitt frukt', icon:'🍎'},
   {key:'hoy', label:'Fylt på høy', icon:'🌾'}
@@ -313,15 +326,16 @@ function taskLabel(key){
   return t ? t.icon + ' ' + t.label : key;
 }
 
-async function loadLog(){
-  try{
-    const res = await fetch(SCRIPT_URL);
-    if(!res.ok) throw new Error('Nettverksfeil: ' + res.status);
-    log = await res.json();
-  }catch(e){
-    console.error('Kunne ikke hente logg', e);
-    log = [];
-  }
+function subscribeToLog(){
+  db.ref('log').on('value', snapshot => {
+    const val = snapshot.val() || {};
+    log = Object.values(val).sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+    renderStatus();
+    renderToday();
+    renderHistory();
+  }, err => {
+    console.error('Kunne ikke koble til Firebase', err);
+  });
 }
 
 function renderNames(){
@@ -440,21 +454,12 @@ async function registerVisit(){
     tasks: Array.from(selectedTasks)
   };
   try{
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify(entry)
-    });
-    log = await res.json();
+    await db.ref('log').push(entry);
   }catch(e){
     console.error('Kunne ikke lagre', e);
-    log.push(entry);
   }
   selectedTasks = new Set();
   renderTasks();
-  renderStatus();
-  renderToday();
-  renderHistory();
   btn.disabled = false;
   btn.textContent = 'Registrert ✓';
   setTimeout(updateRegisterBtn, 1500);
@@ -469,14 +474,11 @@ document.getElementById('historyToggle').onclick = ()=>{
 
 document.getElementById('registerBtn').onclick = registerVisit;
 
-async function init(){
-  await loadLog();
+function init(){
   renderNames();
   renderTasks();
   updateRegisterBtn();
-  renderStatus();
-  renderToday();
-  renderHistory();
+  subscribeToLog();
 }
 init();
 </script>
