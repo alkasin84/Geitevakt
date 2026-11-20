@@ -499,15 +499,34 @@ async function registerVisit(){
   const commentVal = commentField.value.trim();
   if(commentVal) entry.comment = commentVal;
   try{
-    await db.ref('log').push(entry);
+    var savedVisit = await db.ref('log').push(entry);
   }catch(e){
     console.error('Kunne ikke lagre', e);
+    btn.disabled = false;
+    btn.textContent = 'Kunne ikke lagre – prøv igjen';
+    return;
   }
   selectedTasks = new Set();
   commentField.value = '';
   renderTasks();
   btn.disabled = false;
   btn.textContent = 'Registrert ✓';
+  if (entry.comment) {
+    btn.disabled = true;
+    btn.textContent = 'Registrert – sender kommentar …';
+    try {
+      const response = await fetch(window.GEITEVAKT_PUSH_URL + '/comment', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({entryId:savedVisit.key}), signal:AbortSignal.timeout(25000)
+      });
+      if (!response.ok) throw new Error('Kommentarvarsel feilet');
+      btn.textContent = 'Registrert ✓';
+    } catch(e) {
+      btn.textContent = 'Besøket er lagret ✓';
+      alert('Besøket og kommentaren er lagret, men kommentarvarselet kunne ikke bekreftes. Ikke registrer besøket på nytt.');
+    }
+    btn.disabled = false;
+  }
   setTimeout(updateRegisterBtn, 1500);
 }
 

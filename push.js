@@ -3,7 +3,7 @@
   if (!base) return; // Vis ingen aktiveringsknapp før tjenesten er konfigurert.
   const card=document.createElement('div');
   card.className='card';
-  card.innerHTML='<h2>Påminnelse kl. 19.00</h2><p style="font-size:14px;line-height:1.5">Få varsel på denne telefonen hvis ingen har registrert besøk i dag.</p><p id="pushStatus" role="status" style="font-size:14px;line-height:1.5">Sjekker varsling …</p><div id="pushSetup" hidden><button id="pushEnable" class="register-btn" disabled>Slå på varsler</button></div><div id="pushActive" hidden><button id="pushTest" class="register-btn">Send testvarsel til meg</button><button id="pushDisable" class="history-toggle" style="margin-top:16px">Slå av varsler på denne telefonen</button></div>';
+  card.innerHTML='<h2>Påminnelse kl. 19.00</h2><p style="font-size:14px;line-height:1.5">Få kommentarer som pushvarsel, og en påminnelse kl. 19 hvis ingen har registrert besøk i dag.</p><p id="pushStatus" role="status" style="font-size:14px;line-height:1.5">Sjekker varsling …</p><div id="pushSetup" hidden><button id="pushEnable" class="register-btn" disabled>Slå på varsler</button></div><div id="pushActive" hidden><button id="pushTest" class="register-btn">Send testvarsel til meg</button><button id="pushDisable" class="history-toggle" style="margin-top:16px">Slå av varsler på denne telefonen</button></div>';
   document.querySelector('.footer-note').before(card);
   const status=card.querySelector('#pushStatus');
   const enable=card.querySelector('#pushEnable');
